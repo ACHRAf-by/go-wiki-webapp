@@ -1,0 +1,3 @@
+Hello, world,
+Editing and creating new page.
+Go !

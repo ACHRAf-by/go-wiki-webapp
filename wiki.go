@@ -15,19 +15,19 @@ type Page struct {
 
 func (p *Page) save() error {
 	filename := p.Title + ".txt"
-	return os.WriteFile(filename, p.Body, 0600)
+	return os.WriteFile("./data/"+filename, p.Body, 0600)
 }
 
 func loadPage(title string) (*Page, error) {
 	filename := title + ".txt"
-	body, err := os.ReadFile(filename)
+	body, err := os.ReadFile("./data/" + filename)
 	if err != nil {
 		return nil, err
 	}
 	return &Page{Title: title, Body: body}, nil
 }
 
-var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
+var templates = template.Must(template.ParseFiles("./tmpl/edit.html", "./tmpl/view.html"))
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	err := templates.ExecuteTemplate(w, tmpl+".html", p)
@@ -79,7 +79,17 @@ func saveHandler(w http.ResponseWriter, r *http.Request, title string) {
 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
 
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	p, err := loadPage("FrontPage")
+	if err != nil {
+		http.Redirect(w, r, "/view/FrontPage", http.StatusFound)
+		return
+	}
+	renderTemplate(w, "view", p)
+}
+
 func main() {
+	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/view/", makeHandler(viewHandler))
 	http.HandleFunc("/edit/", makeHandler(editHandler))
 	http.HandleFunc("/save/", makeHandler(saveHandler))
